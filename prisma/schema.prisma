@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  SUB_ADMIN
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+  role     Role
+}
+
+model Student {
+  id           String        @id @default(uuid())
+  aadharnumber BigInt        @unique
+  srnumber     String
+  name         String
+  class        String
+  dateofbirth  DateTime
+  fathersname  String
+  schoolname   String
+  photo        String
+  mobilenumber BigInt
+  categoryId   String?
+  category     Category?     @relation(fields: [categoryId], references: [id])
+  StudentGame  StudentGame[]
+}
+
+model Teacher {
+  id           String @id @default(uuid())
+  aadharnumber BigInt @unique
+  name         String
+  fathersname  String
+  mobilenumber BigInt
+  photo        String
+  gameId       String
+  game         Game   @relation(fields: [gameId], references: [id])
+}
+
+model Game {
+  id              String        @id @default(uuid())
+  name            String
+  maxParticipants Int
+  teachers        Teacher[]
+  categoryId      String
+  category        Category      @relation(fields: [categoryId], references: [id])
+  StudentGame     StudentGame[]
+}
+
+model GameGroup {
+  id           String        @id @default(uuid())
+  name         String
+  participants StudentGame[]
+}
+
+model Category {
+  id            String        @id @default(uuid())
+  name          String        @unique
+  game          Game[]
+  Student       Student[]
+  lowerAgeLimit Int
+  upperAgeLimit Int
+  participants  StudentGame[]
+}
+
+model StudentGame {
+  id          String    @id @default(uuid())
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id])
+  gameId      String
+  game        Game      @relation(fields: [gameId], references: [id])
+  gameGroupId String
+  gameGroup   GameGroup @relation(fields: [gameGroupId], references: [id])
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  @@unique([studentId, gameId])
+}
